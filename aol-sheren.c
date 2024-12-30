@@ -39,12 +39,38 @@ void showMenu(int *inputMenu) {
 	} while(*inputMenu < 1 || *inputMenu > 5);
 }
 
+int isUniqueItemID(struct Item *items, int itemCount, int id) {
+	for(int i = 0; i < itemCount; i++) {
+		if(items[i].id == id) {
+			return 0;
+		}
+	}
+	return 1;
+}
+
+int isUniqueSuppID(struct Supplier *suppliers, int suppCount, int id) {
+	for(int i = 0; i < suppCount; i++) {
+		if(suppliers[i].id == id) {
+			return 0;
+		}
+	}
+	return 1;
+}
+
 void insertItem(struct Item *items, int *itemCount) {
+	int id;
+	
 	do {
 		printf("Enter item ID [!= 0]: ");
-	    scanf("%d", &items[*itemCount].id);
+	    scanf("%d", &id);
 	    getchar();
-	} while(items[*itemCount].id == 0);
+	    
+	    if(!isUniqueItemID(items, *itemCount, id)) {
+	    	printf("Item ID has already exist. Choose another one!\n");
+		}
+	} while (id == 0 || !isUniqueItemID(items, *itemCount, id));
+	
+	items[*itemCount].id = id;
 
 	do {
 		printf("Enter item name [1..50]: ");
@@ -61,11 +87,19 @@ void insertItem(struct Item *items, int *itemCount) {
 }
 
 void insertSupplier(struct Supplier *suppliers, int *suppCount) {
+	int id; 
+	
     do {
         printf("Enter supplier ID [!= 0]: ");
-        scanf("%d", &suppliers[*suppCount].id);
+        scanf("%d", &id);
         getchar();  
-    } while (suppliers[*suppCount].id == 0);
+        
+        if(!isUniqueSuppID(suppliers, *suppCount, id)) {
+	    	printf("Supplier ID has already exist. Choose another one!\n");
+		}
+    } while (id == 0 || !isUniqueSuppID(suppliers, *suppCount, id));
+    
+    suppliers[*suppCount].id = id;
 
     do {
         printf("Enter supplier name [1..50]: ");
@@ -298,6 +332,7 @@ void updateSupplier(struct Supplier *suppliers, int suppCount) {
     int update_id;
     printf("Enter supplier ID to update [S followed by number, e.g., S1]: ");
     scanf("%d", &update_id);
+    getchar();
 
     int supp_index = -1;
     for (int i = 0; i < suppCount; i++) {
@@ -325,6 +360,7 @@ void updateInventory(struct Inventory *inventories, int invenCount, struct Item 
     int update_id;
     printf("Enter inventory item ID to update [A followed by number, e.g., A1]: ");
     scanf("%d", &update_id);
+    getchar();
 
     int inven_index = -1;
     for (int i = 0; i < invenCount; i++) {
@@ -355,21 +391,19 @@ void updateRecord(struct Item *items, int itemCount, struct Supplier *suppliers,
 
     switch (choice) {
         case 1:
-            updateItem(items, itemCount);   // Update Item
+            updateItem(items, itemCount);   
             break;
         case 2:
-            updateSupplier(suppliers, suppCount);    // Update Supplier
+            updateSupplier(suppliers, suppCount);    
             break;
         case 3:
-            updateInventory(inventories, invenCount, items, itemCount, suppliers, suppCount); // Update Inventory
+            updateInventory(inventories, invenCount, items, itemCount, suppliers, suppCount); 
             break;
         default:
             printf("Invalid choice!\n\n");
             break;
     }
 }
-
-
 
 int main() {
 	struct Item items[100];
