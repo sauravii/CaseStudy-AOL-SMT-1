@@ -27,16 +27,17 @@ struct Inventory {
 
 void showMenu(int *inputMenu) {
 	printf("What do you want to do?\n");
-	printf("- Insert Record\n");
-	printf("- Show Record\n");
-	printf("- Select Data\n");
-	printf("- Delete Record\n");
-	printf("- Update Record\n");
+	printf("1. Insert Record\n");
+	printf("2. Show Record\n");
+	printf("3. Select Data\n");
+	printf("4. Delete Record\n");
+	printf("5. Update Record\n");
+	printf("6. Exit\n");
 	
 	do {
 		printf("Your choice: ");
 		scanf("%d", inputMenu);
-	} while(*inputMenu < 1 || *inputMenu > 5);
+	} while(*inputMenu < 1 || *inputMenu > 6);
 }
 
 int isUniqueItemID(struct Item *items, int itemCount, int id) {
@@ -47,6 +48,38 @@ int isUniqueItemID(struct Item *items, int itemCount, int id) {
 	}
 	return 1;
 }
+
+void saveData(const char *filename, struct Item *items, int itemCount, struct Supplier *suppliers, int suppCount, struct Inventory *inventories, int invenCount) {
+    FILE *file = fopen(filename, "wb");
+    if (!file) {
+        printf("Error saving data!\n");
+        return;
+    }
+    fwrite(&itemCount, sizeof(int), 1, file);
+    fwrite(items, sizeof(struct Item), itemCount, file);
+    fwrite(&suppCount, sizeof(int), 1, file);
+    fwrite(suppliers, sizeof(struct Supplier), suppCount, file);
+    fwrite(&invenCount, sizeof(int), 1, file);
+    fwrite(inventories, sizeof(struct Inventory), invenCount, file);
+    fclose(file);
+    printf("Data saved successfully!\n");
+}
+
+void loadData(const char *filename, struct Item *items, int *itemCount, struct Supplier *suppliers, int *suppCount, struct Inventory *inventories, int *invenCount) {
+    FILE *file = fopen(filename, "rb");
+    if (!file) {
+        printf("File not found!\n");
+        return;
+    }
+    fread(itemCount, sizeof(int), 1, file);
+    fread(items, sizeof(struct Item), *itemCount, file);
+    fread(suppCount, sizeof(int), 1, file);
+    fread(suppliers, sizeof(struct Supplier), *suppCount, file);
+    fread(invenCount, sizeof(int), 1, file);
+    fread(inventories, sizeof(struct Inventory), *invenCount, file);
+    fclose(file);
+}
+
 
 int isUniqueSuppID(struct Supplier *suppliers, int suppCount, int id) {
 	for(int i = 0; i < suppCount; i++) {
@@ -212,7 +245,7 @@ void showRecords(struct Item *items, int itemCount, struct Supplier *suppliers, 
 void selectRecords(struct Item *items, int itemCount, struct Supplier *suppliers, int suppCount, struct Inventory *inventories, int invenCount) {
     int search_id;
 
-    printf("Enter item ID to search [A followed by number, e.g., A1]: ");
+    printf("Enter item ID to search [just input numbers]: ");
     scanf("%d", &search_id);
 
     for (int i = 0; i < invenCount; i++) {
@@ -258,7 +291,7 @@ void deleteRecords(struct Item *items, int *itemCount, struct Supplier *supplier
     int delete_id;
     int found = 0;
 
-    printf("Enter item ID to delete [A followed by number, e.g., A1]: ");
+    printf("Enter item ID to delete [just input numbers]: ");
     scanf("%d", &delete_id);
 
     for (int i = 0; i < *invenCount; i++) {
@@ -301,7 +334,7 @@ void deleteRecords(struct Item *items, int *itemCount, struct Supplier *supplier
 
 void updateItem(struct Item *items, int itemCount) {
     int update_id;
-    printf("Enter item ID to update [A followed by number, e.g., A1]: ");
+    printf("Enter item ID to update [just input numbers]: ");
     scanf("%d", &update_id);
     getchar();
 
@@ -330,7 +363,7 @@ void updateItem(struct Item *items, int itemCount) {
 
 void updateSupplier(struct Supplier *suppliers, int suppCount) {
     int update_id;
-    printf("Enter supplier ID to update [S followed by number, e.g., S1]: ");
+    printf("Enter supplier ID to update [just input numbers]: ");
     scanf("%d", &update_id);
     getchar();
 
@@ -358,7 +391,7 @@ void updateSupplier(struct Supplier *suppliers, int suppCount) {
 
 void updateInventory(struct Inventory *inventories, int invenCount, struct Item *items, int itemCount, struct Supplier *suppliers, int suppCount) {
     int update_id;
-    printf("Enter inventory item ID to update [A followed by number, e.g., A1]: ");
+    printf("Enter inventory item ID to update [just input numbers]: ");
     scanf("%d", &update_id);
     getchar();
 
@@ -413,6 +446,10 @@ int main() {
 	int inputMenu;
 	int itemCount = 0, suppCount = 0, invenCount = 0;
 	
+	const char *filename = "dataStore.bin";
+	
+	loadData(filename, items, &itemCount, suppliers, &suppCount, inventories, &invenCount);
+	
 	printf("INVENTORY SYSTEM\n");
 	printf("INVENTORY DATA MAIN MENU\n\n");
 	
@@ -442,6 +479,11 @@ int main() {
 			case 5:
                 updateRecord(items, itemCount, suppliers, suppCount, inventories, invenCount);
 				break;
+				
+			case 6:
+                saveData(filename, items, itemCount, suppliers, suppCount, inventories, invenCount);
+                printf("Exiting program and saving data...\n");
+                return 0;
 		}
 	}	
 }
